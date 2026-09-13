@@ -2,7 +2,7 @@
 
 This folder contains the User Profile microservice for Bizcord.
 
-The current source is the initial ASP.NET Core Web API boilerplate. It includes the standard sample endpoint so the application can be started and tested before profile-specific endpoints are added.
+The service is built with ASP.NET Core. The current version includes the initial Web API boilerplate and a small messaging abstraction for publishing and subscribing to messages through RabbitMQ.
 
 ## Structure
 
@@ -26,4 +26,20 @@ dotnet run
 
 When the application runs in the Development environment, Swagger is available at `/swagger`.
 
-The sample `WeatherForecast` endpoint is temporary boilerplate and will be replaced as the User Profile API is implemented.
+## Messaging
+
+Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ-specific details and is registered through dependency injection in `Program.cs`.
+
+The client currently supports publishing messages and creating subscriptions. A subscription returns `IDisposable`, which can be disposed when the consumer should stop receiving messages.
+
+The default RabbitMQ connection is configured in `appsettings.json`:
+
+```json
+"RabbitMq": {
+  "ConnectionString": "host=localhost"
+}
+```
+
+The value can be overridden through configuration, for example with the environment variable `RabbitMq__ConnectionString`.
+
+The sample `WeatherForecast` endpoint is still temporary boilerplate and will be replaced as the User Profile API is implemented.
