@@ -61,6 +61,10 @@ Swagger is available at `/swagger` in the Development environment. `UserProfile.
 
 Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ-specific details and is registered through dependency injection in `Program.cs`.
 
+Message handlers implement `IMessageHandler<TMessage>`. At startup the API scans its assembly, registers any handlers it finds and starts their subscriptions from a background service. A new handler therefore only needs to implement the interface; it does not need another registration in `Program.cs`.
+
+The background service creates one subscription for each message type and resolves the matching handlers from dependency injection whenever a message arrives. There are no inbound message handlers in the service yet because no incoming message contract has been defined for the user-profile service at this point.
+
 The default RabbitMQ connection is configured in `appsettings.json`:
 
 ```json

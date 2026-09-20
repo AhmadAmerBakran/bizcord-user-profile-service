@@ -8,6 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
 builder.Services.AddMessageClient(builder.Configuration);
+builder.Services.AddMessageHandlers(typeof(MessageClientServiceCollectionExtensions).Assembly);
 builder.Services.AddUserProfiles();
 
 var app = builder.Build();
