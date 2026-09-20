@@ -2,19 +2,20 @@
 
 This folder contains the User Profile microservice for Bizcord.
 
-The service is built with ASP.NET Core. The API project contains the HTTP and messaging setup, while the domain project contains the profile model and is kept independent of frameworks and infrastructure code.
+The service is built with ASP.NET Core. The API project contains the HTTP and messaging setup, the domain project contains the internal profile model, and the contracts project contains the data that can be shared with other services.
 
 ## Structure
 
 ```text
 src/
 ├── UserProfile.Api/
+├── UserProfile.Contracts/
 └── UserProfile.Domain/
 tests/
 Dockerfile
 ```
 
-`UserProfile.Api` is the executable Web API. `UserProfile.Domain` contains the domain model used by the service.
+`UserProfile.Api` is the executable Web API. `UserProfile.Domain` contains the model owned by this service. `UserProfile.Contracts` contains small data contracts intended for communication outside the domain layer.
 
 ## Domain model
 
@@ -25,6 +26,12 @@ The current model is intentionally small and focuses on the parts owned by this 
 `DisplayName` and `Bio` are value objects. They have no identity of their own and are immutable once created. The domain project does not depend on ASP.NET Core, RabbitMQ or a database library, so the model can change without being tied to those implementation details.
 
 The model will be extended as the remaining service requirements are implemented.
+
+## Shared model
+
+`UserProfileDto` is the shared representation of a profile. It contains the user id, display name and bio.
+
+The internal profile id, value-object types and domain behavior are not part of the contract. Other services only need the data required to identify a user and show the profile, so the contract stays independent of the way this service models or stores the profile internally.
 
 ## Run locally
 

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UserProfile.Contracts\UserProfile.Contracts.csproj" />
     <ProjectReference Include="..\UserProfile.Domain\UserProfile.Domain.csproj" />
   </ItemGroup>
 
