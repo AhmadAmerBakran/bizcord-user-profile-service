@@ -1,3 +1,4 @@
+using UserProfile.Api.Configuration;
 using UserProfile.Api.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthorization();
 builder.Services.AddMessageClient(builder.Configuration);
+builder.Services.AddUserProfiles();
 
 var app = builder.Build();
 

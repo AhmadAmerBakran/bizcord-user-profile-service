@@ -2,7 +2,7 @@
 
 This repository contains the User Profile microservice for Bizcord, a Discord-like system developed as part of the System Integration course.
 
-The service is being developed incrementally through the course. It currently contains the ASP.NET Core API setup, the internal user-profile domain model, shared profile contracts and the RabbitMQ messaging abstraction.
+The service is being developed incrementally through the course. It currently contains the user-profile domain model, shared contracts, a CRUD REST API, an in-memory repository and the RabbitMQ messaging abstraction.
 
 ## Repository layout
 
@@ -11,8 +11,10 @@ apps/
 └── user-profile-microservice/
     ├── src/
     │   ├── UserProfile.Api/
+    │   ├── UserProfile.Application/
     │   ├── UserProfile.Contracts/
-    │   └── UserProfile.Domain/
+    │   ├── UserProfile.Domain/
+    │   └── UserProfile.Infrastructure/
     ├── tests/
     ├── Dockerfile
     └── README.md

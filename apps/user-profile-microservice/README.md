@@ -2,36 +2,48 @@
 
 This folder contains the User Profile microservice for Bizcord.
 
-The service is built with ASP.NET Core. The API project contains the HTTP and messaging setup, the domain project contains the internal profile model, and the contracts project contains the data that can be shared with other services.
+The service is split into a few small projects so the HTTP layer, business logic and internal model do not depend on each other more than necessary.
 
 ## Structure
 
 ```text
 src/
 ├── UserProfile.Api/
+├── UserProfile.Application/
 ├── UserProfile.Contracts/
-└── UserProfile.Domain/
+├── UserProfile.Domain/
+└── UserProfile.Infrastructure/
 tests/
 Dockerfile
 ```
 
-`UserProfile.Api` is the executable Web API. `UserProfile.Domain` contains the model owned by this service. `UserProfile.Contracts` contains small data contracts intended for communication outside the domain layer.
+`UserProfile.Domain` contains the internal profile entity and value objects. `UserProfile.Contracts` contains the profile data that can be shared with other services. The application project contains the profile use cases, while the infrastructure project currently provides an in-memory repository. `UserProfile.Api` handles HTTP and dependency injection.
+
+## REST API
+
+The API exposes the basic CRUD operations for user profiles:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/user-profiles` | Create a profile |
+| `GET` | `/api/user-profiles` | List profiles |
+| `GET` | `/api/user-profiles/{userId}` | Get one profile |
+| `PUT` | `/api/user-profiles/{userId}` | Update a profile |
+| `DELETE` | `/api/user-profiles/{userId}` | Delete a profile |
+
+The API returns the shared `UserProfileDto` instead of exposing the internal domain entity. A duplicate profile returns `409 Conflict`, invalid input returns `400 Bad Request`, and missing profiles return `404 Not Found`.
+
+Profiles are stored in memory for now, so restarting the application clears the data.
 
 ## Domain model
 
-The current model is intentionally small and focuses on the parts owned by this microservice.
+`UserProfile` is the main entity. It has its own internal profile id, the id of the user it belongs to, a display name and a bio. Changes to the display name and bio go through methods on the entity instead of public setters.
 
-`UserProfile` is the main entity. It has its own profile id, the id of the user it belongs to, a display name and a bio. Changes to the display name and bio go through methods on the entity instead of exposing public setters.
-
-`DisplayName` and `Bio` are value objects. They have no identity of their own and are immutable once created. The domain project does not depend on ASP.NET Core, RabbitMQ or a database library, so the model can change without being tied to those implementation details.
-
-The model will be extended as the remaining service requirements are implemented.
+`DisplayName` and `Bio` are value objects. They are immutable and the domain project does not depend on ASP.NET Core, RabbitMQ or a database library.
 
 ## Shared model
 
-`UserProfileDto` is the shared representation of a profile. It contains the user id, display name and bio.
-
-The internal profile id, value-object types and domain behavior are not part of the contract. Other services only need the data required to identify a user and show the profile, so the contract stays independent of the way this service models or stores the profile internally.
+`UserProfileDto` contains the user id, display name and bio. The internal profile id, value-object types and domain behavior are not part of the contract.
 
 ## Run locally
 
@@ -43,13 +55,11 @@ dotnet restore
 dotnet run
 ```
 
-When the application runs in the Development environment, Swagger is available at `/swagger`.
+Swagger is available at `/swagger` in the Development environment. `UserProfile.Api.http` also contains sample requests for the CRUD endpoints.
 
 ## Messaging
 
 Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ-specific details and is registered through dependency injection in `Program.cs`.
-
-The client currently supports publishing messages and creating subscriptions. A subscription returns `IDisposable`, which can be disposed when the consumer should stop receiving messages.
 
 The default RabbitMQ connection is configured in `appsettings.json`:
 
@@ -60,5 +70,3 @@ The default RabbitMQ connection is configured in `appsettings.json`:
 ```
 
 The value can be overridden through configuration, for example with the environment variable `RabbitMq__ConnectionString`.
-
-The sample `WeatherForecast` endpoint is still temporary boilerplate and will be replaced as the User Profile API is implemented.

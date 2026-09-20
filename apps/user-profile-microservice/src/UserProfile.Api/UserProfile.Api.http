@@ -1,6 +1,32 @@
 @UserProfile_Api_HostAddress = http://localhost:5194
+@userId = 11111111-1111-1111-1111-111111111111
 
-GET {{UserProfile_Api_HostAddress}}/weatherforecast
+### Create profile
+POST {{UserProfile_Api_HostAddress}}/api/user-profiles
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "displayName": "Hamada",
+  "bio": "Bizcord user profile"
+}
+
+### List profiles
+GET {{UserProfile_Api_HostAddress}}/api/user-profiles
 Accept: application/json
 
-###
+### Get profile
+GET {{UserProfile_Api_HostAddress}}/api/user-profiles/{{userId}}
+Accept: application/json
+
+### Update profile
+PUT {{UserProfile_Api_HostAddress}}/api/user-profiles/{{userId}}
+Content-Type: application/json
+
+{
+  "displayName": "Hamada Updated",
+  "bio": "Updated profile"
+}
+
+### Delete profile
+DELETE {{UserProfile_Api_HostAddress}}/api/user-profiles/{{userId}}
