@@ -2,17 +2,29 @@
 
 This folder contains the User Profile microservice for Bizcord.
 
-The service is built with ASP.NET Core. The current version includes the initial Web API boilerplate and a small messaging abstraction for publishing and subscribing to messages through RabbitMQ.
+The service is built with ASP.NET Core. The API project contains the HTTP and messaging setup, while the domain project contains the profile model and is kept independent of frameworks and infrastructure code.
 
 ## Structure
 
 ```text
-src/        Application source code
-tests/      Automated tests
-Dockerfile  Container definition
+src/
+├── UserProfile.Api/
+└── UserProfile.Domain/
+tests/
+Dockerfile
 ```
 
-The API project is located in `src/UserProfile.Api`.
+`UserProfile.Api` is the executable Web API. `UserProfile.Domain` contains the domain model used by the service.
+
+## Domain model
+
+The current model is intentionally small and focuses on the parts owned by this microservice.
+
+`UserProfile` is the main entity. It has its own profile id, the id of the user it belongs to, a display name and a bio. Changes to the display name and bio go through methods on the entity instead of exposing public setters.
+
+`DisplayName` and `Bio` are value objects. They have no identity of their own and are immutable once created. The domain project does not depend on ASP.NET Core, RabbitMQ or a database library, so the model can change without being tied to those implementation details.
+
+The model will be extended as the remaining service requirements are implemented.
 
 ## Run locally
 
