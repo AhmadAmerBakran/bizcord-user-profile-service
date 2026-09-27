@@ -57,6 +57,24 @@ dotnet run
 
 Swagger is available at `/swagger` in the Development environment. `UserProfile.Api.http` also contains sample requests for the CRUD endpoints.
 
+## Docker
+
+The Dockerfile uses .NET 8 and builds the service in stages. The SDK image is only used for restore, build and publish. The final image contains the ASP.NET runtime and the published application.
+
+Build the image from this folder:
+
+```bash
+docker build -t bizcord-user-profile .
+```
+
+Run it on port 8080:
+
+```bash
+docker run --rm -p 8080:8080 bizcord-user-profile
+```
+
+RabbitMQ is still configured through `RabbitMq__ConnectionString`. When RabbitMQ runs in another container, the connection string must use that container's service name instead of `localhost`.
+
 ## Messaging
 
 Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ-specific details and is registered through dependency injection in `Program.cs`.
