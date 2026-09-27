@@ -80,9 +80,9 @@ For normal development it is easier to start the API together with RabbitMQ usin
 docker compose up --build
 ```
 
-The API is then available on port `8080`. RabbitMQ uses port `5672`, and its management page is available on port `15672`.
+The API is then available on port `8080`. RabbitMQ uses port `5672`, and its management page is available on port `15672` with the development login `bizcord` / `bizcord`.
 
-The Compose file waits for RabbitMQ's health check before starting the API. Inside the Compose network the RabbitMQ service is reached by the name `rabbitmq`, so the API receives `RabbitMq__ConnectionString=host=rabbitmq` through its environment.
+The Compose file waits until RabbitMQ is running and listening on its AMQP port before starting the API. Inside the Compose network the RabbitMQ service is reached by the name `rabbitmq`, and the API gets its connection string through `RabbitMq__ConnectionString`.
 
 Stop the containers with:
 
