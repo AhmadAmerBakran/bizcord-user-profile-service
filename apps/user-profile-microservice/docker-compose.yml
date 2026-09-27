@@ -1,11 +1,14 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: bizcord
+      RABBITMQ_DEFAULT_PASS: bizcord
     ports:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_port_listener 5672"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -21,4 +24,4 @@ services:
     ports:
       - "8080:8080"
     environment:
-      RabbitMq__ConnectionString: "host=rabbitmq"
+      RabbitMq__ConnectionString: "host=rabbitmq;username=bizcord;password=bizcord"
