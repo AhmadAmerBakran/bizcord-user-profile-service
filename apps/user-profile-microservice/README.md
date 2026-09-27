@@ -15,6 +15,7 @@ src/
 └── UserProfile.Infrastructure/
 tests/
 Dockerfile
+docker-compose.yml
 ```
 
 `UserProfile.Domain` contains the internal profile entity and value objects. `UserProfile.Contracts` contains the profile data that can be shared with other services. The application project contains the profile use cases, while the infrastructure project currently provides an in-memory repository. `UserProfile.Api` handles HTTP and dependency injection.
@@ -73,7 +74,21 @@ Run it on port 8080:
 docker run --rm -p 8080:8080 bizcord-user-profile
 ```
 
-RabbitMQ is still configured through `RabbitMq__ConnectionString`. When RabbitMQ runs in another container, the connection string must use that container's service name instead of `localhost`.
+For normal development it is easier to start the API together with RabbitMQ using Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The API is then available on port `8080`. RabbitMQ uses port `5672`, and its management page is available on port `15672`.
+
+The Compose file waits for RabbitMQ's health check before starting the API. Inside the Compose network the RabbitMQ service is reached by the name `rabbitmq`, so the API receives `RabbitMq__ConnectionString=host=rabbitmq` through its environment.
+
+Stop the containers with:
+
+```bash
+docker compose down
+```
 
 ## Messaging
 
