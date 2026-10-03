@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\packages\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\packages\Shared.Contracts\Shared.Contracts.csproj" />
     <ProjectReference Include="..\..\src\UserProfile.Api\UserProfile.Api.csproj" />
   </ItemGroup>
 

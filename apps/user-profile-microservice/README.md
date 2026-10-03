@@ -2,13 +2,11 @@
 
 This folder contains the User Profile microservice for Bizcord.
 
-The service is split into a few small projects so the HTTP layer, business logic and internal model do not depend on each other more than necessary.
+The service is split into a few small projects so the HTTP layer, business logic and internal model do not depend on each other more than necessary. Shared message contracts used by the Bizcord services live in `packages/Shared.Contracts` at the repository root.
 
 ## Structure
 
 ```text
-packages/
-└── Shared.Contracts/
 src/
 ├── UserProfile.Api/
 ├── UserProfile.Application/
@@ -23,7 +21,7 @@ Dockerfile
 docker-compose.yml
 ```
 
-`UserProfile.Domain` contains the internal profile entity, message activity state and value objects. `UserProfile.Contracts` contains the profile data used by the REST API. The application project contains the profile use cases, while the infrastructure project currently provides in memory repositories. `UserProfile.Api` handles HTTP, RabbitMQ and dependency injection. The message contracts shared with the other Bizcord services are kept in `packages/Shared.Contracts`.
+`UserProfile.Domain` contains the internal profile entity, message activity state and value objects. `UserProfile.Contracts` contains the profile data used by the REST API. The application project contains the profile use cases, while the infrastructure project currently provides in memory repositories. `UserProfile.Api` handles HTTP, RabbitMQ and dependency injection.
 
 ## REST API
 
@@ -69,12 +67,12 @@ Swagger is available at `/swagger` in the Development environment. `UserProfile.
 
 ## Docker
 
-The Dockerfile uses .NET 8 and builds the service in stages. The SDK image is only used for restore, build and publish. The final image contains the ASP.NET runtime and the published application.
+The Dockerfile uses .NET 8 and builds the service in stages. The SDK image is only used for restore, build and publish. The final image contains the ASP.NET runtime and the published application. The Docker build context is the repository root so the shared message contracts are available during restore.
 
-Build the image from this folder:
+Build the image while you are in this folder:
 
 ```bash
-docker build -t bizcord-user-profile .
+docker build -f Dockerfile -t bizcord-user-profile ../..
 ```
 
 Run it on port 8080:

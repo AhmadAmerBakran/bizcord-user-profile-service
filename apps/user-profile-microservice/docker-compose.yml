@@ -16,8 +16,8 @@ services:
 
   user-profile:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: apps/user-profile-microservice/Dockerfile
     depends_on:
       rabbitmq:
         condition: service_healthy

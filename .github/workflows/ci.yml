@@ -38,4 +38,4 @@ jobs:
         run: dotnet test apps/user-profile-microservice/tests/UserProfile.IntegrationTests/UserProfile.IntegrationTests.csproj --configuration Release
 
       - name: Docker build
-        run: docker build -t bizcord-user-profile apps/user-profile-microservice
+        run: docker build -f apps/user-profile-microservice/Dockerfile -t bizcord-user-profile .

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\packages\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\packages\Shared.Contracts\Shared.Contracts.csproj" />
     <ProjectReference Include="..\..\src\UserProfile.Api\UserProfile.Api.csproj" />
     <ProjectReference Include="..\..\src\UserProfile.Application\UserProfile.Application.csproj" />
     <ProjectReference Include="..\..\src\UserProfile.Domain\UserProfile.Domain.csproj" />

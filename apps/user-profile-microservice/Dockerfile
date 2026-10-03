@@ -8,16 +8,16 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 COPY ["packages/Shared.Contracts/Shared.Contracts.csproj", "packages/Shared.Contracts/"]
-COPY ["src/UserProfile.Api/UserProfile.Api.csproj", "src/UserProfile.Api/"]
-COPY ["src/UserProfile.Application/UserProfile.Application.csproj", "src/UserProfile.Application/"]
-COPY ["src/UserProfile.Contracts/UserProfile.Contracts.csproj", "src/UserProfile.Contracts/"]
-COPY ["src/UserProfile.Domain/UserProfile.Domain.csproj", "src/UserProfile.Domain/"]
-COPY ["src/UserProfile.Infrastructure/UserProfile.Infrastructure.csproj", "src/UserProfile.Infrastructure/"]
+COPY ["apps/user-profile-microservice/src/UserProfile.Api/UserProfile.Api.csproj", "apps/user-profile-microservice/src/UserProfile.Api/"]
+COPY ["apps/user-profile-microservice/src/UserProfile.Application/UserProfile.Application.csproj", "apps/user-profile-microservice/src/UserProfile.Application/"]
+COPY ["apps/user-profile-microservice/src/UserProfile.Contracts/UserProfile.Contracts.csproj", "apps/user-profile-microservice/src/UserProfile.Contracts/"]
+COPY ["apps/user-profile-microservice/src/UserProfile.Domain/UserProfile.Domain.csproj", "apps/user-profile-microservice/src/UserProfile.Domain/"]
+COPY ["apps/user-profile-microservice/src/UserProfile.Infrastructure/UserProfile.Infrastructure.csproj", "apps/user-profile-microservice/src/UserProfile.Infrastructure/"]
 
-RUN dotnet restore "src/UserProfile.Api/UserProfile.Api.csproj"
+RUN dotnet restore "apps/user-profile-microservice/src/UserProfile.Api/UserProfile.Api.csproj"
 
 COPY . .
-WORKDIR "/src/src/UserProfile.Api"
+WORKDIR "/src/apps/user-profile-microservice/src/UserProfile.Api"
 RUN dotnet build "UserProfile.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 FROM build AS publish
