@@ -3,6 +3,7 @@ using Shared.Contracts.Events;
 using UserProfile.Api.Messaging;
 using UserProfile.Application.Abstractions;
 using UserProfile.Domain.Entities;
+using Xunit;
 
 namespace UserProfile.ContractTests.Messaging;
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Contracts.Events;
 using UserProfile.Api.Messaging;
 using UserProfile.IntegrationTests.Infrastructure;
+using Xunit;
 
 namespace UserProfile.IntegrationTests.Messaging;
 
