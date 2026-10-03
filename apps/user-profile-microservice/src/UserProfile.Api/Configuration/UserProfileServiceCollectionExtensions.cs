@@ -9,6 +9,7 @@ public static class UserProfileServiceCollectionExtensions
     public static IServiceCollection AddUserProfiles(this IServiceCollection services)
     {
         services.AddSingleton<IUserProfileRepository, InMemoryUserProfileRepository>();
+        services.AddSingleton<IUserMessageActivityRepository, InMemoryUserMessageActivityRepository>();
         services.AddScoped<IUserProfileService, UserProfileService>();
 
         return services;

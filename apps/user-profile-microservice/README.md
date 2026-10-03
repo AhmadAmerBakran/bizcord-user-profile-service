@@ -7,6 +7,8 @@ The service is split into a few small projects so the HTTP layer, business logic
 ## Structure
 
 ```text
+packages/
+└── Shared.Contracts/
 src/
 ├── UserProfile.Api/
 ├── UserProfile.Application/
@@ -14,11 +16,14 @@ src/
 ├── UserProfile.Domain/
 └── UserProfile.Infrastructure/
 tests/
+├── UserProfile.UnitTests/
+├── UserProfile.ContractTests/
+└── UserProfile.IntegrationTests/
 Dockerfile
 docker-compose.yml
 ```
 
-`UserProfile.Domain` contains the internal profile entity and value objects. `UserProfile.Contracts` contains the profile data that can be shared with other services. The application project contains the profile use cases, while the infrastructure project currently provides an in-memory repository. `UserProfile.Api` handles HTTP and dependency injection.
+`UserProfile.Domain` contains the internal profile entity, message activity state and value objects. `UserProfile.Contracts` contains the profile data used by the REST API. The application project contains the profile use cases, while the infrastructure project currently provides in memory repositories. `UserProfile.Api` handles HTTP, RabbitMQ and dependency injection. The message contracts shared with the other Bizcord services are kept in `packages/Shared.Contracts`.
 
 ## REST API
 
@@ -38,13 +43,17 @@ Profiles are stored in memory for now, so restarting the application clears the 
 
 ## Domain model
 
-`UserProfile` is the main entity. It has its own internal profile id, the id of the user it belongs to, a display name and a bio. Changes to the display name and bio go through methods on the entity instead of public setters.
+`UserProfile` is the main profile entity. It has its own internal profile id, the id of the user it belongs to, a display name and a bio. Changes to the display name and bio go through methods on the entity instead of public setters.
+
+`UserMessageActivity` keeps a small activity summary for each author seen in `MessagePostedEvent`. It records how many posted messages have been processed and the most recent message timestamp. The state is kept separate from the profile itself because a message can arrive before a profile has been created locally.
 
 `DisplayName` and `Bio` are value objects. They are immutable and the domain project does not depend on ASP.NET Core, RabbitMQ or a database library.
 
 ## Shared model
 
-`UserProfileDto` contains the user id, display name and bio. The internal profile id, value-object types and domain behavior are not part of the contract.
+`UserProfileDto` contains the user id, display name and bio. The internal profile id, value object types and domain behavior are not part of the REST contract.
+
+`MessagePostedEvent` is the incoming system contract for a posted message. After handling it, this service publishes `UserProfileActivityUpdatedEvent`. The result includes the original `MessageId`, which makes the message flow traceable across services.
 
 ## Run locally
 
@@ -92,11 +101,9 @@ docker compose down
 
 ## Messaging
 
-Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ-specific details and is registered through dependency injection in `Program.cs`.
+Messaging is exposed through `IMessageClient` instead of using EasyNetQ directly throughout the application. The EasyNetQ implementation handles the RabbitMQ specific details and is registered through dependency injection in `Program.cs`.
 
-Message handlers implement `IMessageHandler<TMessage>`. At startup the API scans its assembly, registers any handlers it finds and starts their subscriptions from a background service. A new handler therefore only needs to implement the interface; it does not need another registration in `Program.cs`.
-
-The background service creates one subscription for each message type and resolves the matching handlers from dependency injection whenever a message arrives. There are no inbound message handlers in the service yet because no incoming message contract has been defined for the user-profile service at this point.
+Message handlers implement `IMessageHandler<TMessage>`. At startup the API scans its assembly, registers the handlers it finds and starts their subscriptions from a background service. `MessagePostedHandler` consumes `MessagePostedEvent`, updates the author's message activity summary and publishes `UserProfileActivityUpdatedEvent`.
 
 The default RabbitMQ connection is configured in `appsettings.json`:
 
@@ -107,3 +114,23 @@ The default RabbitMQ connection is configured in `appsettings.json`:
 ```
 
 The value can be overridden through configuration, for example with the environment variable `RabbitMq__ConnectionString`.
+
+## Testing
+
+The message posting flow is covered at three scopes. The unit test checks the handler's own logic and the event it publishes. The consumer contract test checks that the handler can process the minimum valid shared message and still publish its result. The integration test uses the real EasyNetQ client, the real background handler and a real RabbitMQ broker.
+
+The unit and contract tests do not need RabbitMQ:
+
+```bash
+dotnet test tests/UserProfile.UnitTests/UserProfile.UnitTests.csproj
+dotnet test tests/UserProfile.ContractTests/UserProfile.ContractTests.csproj
+```
+
+For the integration test, start RabbitMQ from this folder first and then run the test project:
+
+```bash
+docker compose up -d rabbitmq
+dotnet test tests/UserProfile.IntegrationTests/UserProfile.IntegrationTests.csproj
+```
+
+The integration test uses `host=localhost;username=bizcord;password=bizcord` by default. A different test broker can be selected with the `BIZCORD_TEST_RABBITMQ` environment variable.

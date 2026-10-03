@@ -7,6 +7,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
+COPY ["packages/Shared.Contracts/Shared.Contracts.csproj", "packages/Shared.Contracts/"]
 COPY ["src/UserProfile.Api/UserProfile.Api.csproj", "src/UserProfile.Api/"]
 COPY ["src/UserProfile.Application/UserProfile.Application.csproj", "src/UserProfile.Application/"]
 COPY ["src/UserProfile.Contracts/UserProfile.Contracts.csproj", "src/UserProfile.Contracts/"]

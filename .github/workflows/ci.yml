@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      rabbitmq:
+        image: rabbitmq:3-management
+        env:
+          RABBITMQ_DEFAULT_USER: bizcord
+          RABBITMQ_DEFAULT_PASS: bizcord
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Unit tests
+        run: dotnet test apps/user-profile-microservice/tests/UserProfile.UnitTests/UserProfile.UnitTests.csproj --configuration Release
+
+      - name: Contract tests
+        run: dotnet test apps/user-profile-microservice/tests/UserProfile.ContractTests/UserProfile.ContractTests.csproj --configuration Release
+
+      - name: Integration tests
+        run: dotnet test apps/user-profile-microservice/tests/UserProfile.IntegrationTests/UserProfile.IntegrationTests.csproj --configuration Release
+
+      - name: Docker build
+        run: docker build -t bizcord-user-profile apps/user-profile-microservice
