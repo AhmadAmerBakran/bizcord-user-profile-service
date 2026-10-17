@@ -22,6 +22,8 @@ apps/
 
 Development details for the microservice are kept in `apps/user-profile-microservice/README.md`.
 
+The [architecture notes](docs/architecture.md) describe our service boundaries, data ownership and interactions.
+
 ## Development workflow
 
 Work for each course week is kept on its own branch and merged when the week's tasks are complete.
