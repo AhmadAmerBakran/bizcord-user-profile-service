@@ -39,3 +39,27 @@ jobs:
 
       - name: Docker build
         run: docker build -f apps/user-profile-microservice/Dockerfile -t bizcord-user-profile .
+
+      - name: Container startup smoke test
+        run: |
+          docker run -d --name user-profile-smoke --network host \
+            -e 'RabbitMq__ConnectionString=host=localhost;username=bizcord;password=bizcord' \
+            bizcord-user-profile
+          trap 'docker rm -f user-profile-smoke >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --silent --fail http://localhost:8080/api/user-profiles > /dev/null; then
+              echo "User Profile API is responding."
+              exit 0
+            fi
+
+            if [ "$(docker inspect -f '{{.State.Running}}' user-profile-smoke)" != "true" ]; then
+              docker logs user-profile-smoke
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          docker logs user-profile-smoke
+          exit 1
