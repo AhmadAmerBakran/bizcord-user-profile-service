@@ -1,0 +1,188 @@
+{
+  "Routes": [
+    {
+      "Key": "user-profile-self-read",
+      "Priority": 10,
+      "UpstreamPathTemplate": "/user-profiles/me",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.read"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "member"
+      },
+      "ChangeDownstreamPathTemplate": {
+        "userId": "Claims[sub] > value"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "Key": "user-profile-list",
+      "UpstreamPathTemplate": "/user-profiles",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.read"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "admin"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "Key": "user-profile-get",
+      "UpstreamPathTemplate": "/user-profiles/{userId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.read"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "admin"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "Key": "user-profile-create",
+      "UpstreamPathTemplate": "/user-profiles",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.write"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "admin"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "Key": "user-profile-update",
+      "UpstreamPathTemplate": "/user-profiles/{userId}",
+      "UpstreamHttpMethod": [
+        "PUT"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.write"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "admin"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "Key": "user-profile-delete",
+      "UpstreamPathTemplate": "/user-profiles/{userId}",
+      "UpstreamHttpMethod": [
+        "DELETE"
+      ],
+      "DownstreamPathTemplate": "/api/user-profiles/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5194
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [
+          "Bearer"
+        ],
+        "AllowedScopes": [
+          "profile.write"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "admin"
+      },
+      "AddHeadersToRequest": {
+        "X-UserId": "Claims[sub] > value",
+        "X-Role": "Claims[role] > value"
+      }
+    }
+  ]
+}
