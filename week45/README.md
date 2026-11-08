@@ -28,3 +28,21 @@ Copy the gateway configuration into a separate clone of https://github.com/patri
 Run `python week45/api-gateway/check_config.py` to check the route configuration's structure. This is only a static check. Real HTTP tests still need the gateway, API, RabbitMQ and valid test tokens.
 
 The Week 45 Vault setup is described in `week45/vault/README.md`.
+
+## Vault integration
+
+The application can read `AuthenticationProviderKey` and `RabbitMqConnectionString` from Vault KV v2 when `Vault__Enabled=true`. It expects `VAULT_TOKEN` at runtime and fails at startup if the token or secrets are missing. The checked-in `appsettings.json` includes only non-sensitive Vault settings.
+
+Follow [the Vault setup](vault/README.md) for initialization, unsealing, a read-only one-hour token and test scenarios. The local Compose setup includes Vault, RabbitMQ and the User Profile API.
+
+## Verification
+
+After starting the lecturer's gateway at port 8080 and the User Profile API at port 5194, run:
+
+```powershell
+.\week45\api-gateway\test-week45.ps1
+```
+
+The script checks 401 for no token, 403 for insufficient role or scope, and 404 for a permitted read of a nonexistent profile at both the gateway and the direct service address. It gets exercise JWTs from the lecturer's `/faucet`.
+
+The repository CI also runs Vault parser unit tests, direct API authorization integration tests and the container startup smoke test. Without `dotnet` and Docker in the current environment, their runtime results are not verified here.

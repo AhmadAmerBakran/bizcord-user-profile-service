@@ -150,3 +150,7 @@ dotnet test tests/UserProfile.IntegrationTests/UserProfile.IntegrationTests.cspr
 ```
 
 The integration test uses `host=localhost;username=bizcord;password=bizcord` by default. A different test broker can be selected with the `BIZCORD_TEST_RABBITMQ` environment variable.
+
+## Week 45 security
+
+The Week 45 branch requires bearer authentication for all profile HTTP operations, checks ownership for member reads and restricts a new internal read endpoint to service tokens. Secrets can be loaded from Vault at startup. See [the Week 45 instructions](../../week45/README.md) for the gateway routes and [Vault setup](../../week45/vault/README.md) for local configuration and tests.
