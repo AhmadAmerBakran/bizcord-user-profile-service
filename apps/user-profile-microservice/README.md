@@ -113,6 +113,24 @@ The default RabbitMQ connection is configured in `appsettings.json`:
 
 The value can be overridden through configuration, for example with the environment variable `RabbitMq__ConnectionString`.
 
+## Reliability
+
+The [week 44 failure review](failure-points.md) records the failure points found in the current implementation and what still needs to be addressed.
+
+The message consumer retries failed subscription attempts with exponential backoff (starting at 1 second, capped at 30 seconds). Retries stop when the host is shutting down. Each failure is logged so broker connectivity problems remain visible.
+
+Incoming `MessagePostedEvent` messages are recorded by `MessageId`. Replaying the same message no longer increases the author's count twice. The handler still publishes the resulting activity event again on a replay, which lets it recover from an earlier failed publish. Other consumers must therefore tolerate duplicate `UserProfileActivityUpdatedEvent` messages.
+
+These protections only apply while the process is running. The in-memory repositories and processed-message IDs are lost on restart. Durable storage and an outbox are still needed for stronger delivery guarantees.
+
+The retry and duplicate-delivery scenarios can be checked without RabbitMQ:
+
+```bash
+dotnet test tests/UserProfile.UnitTests/UserProfile.UnitTests.csproj --configuration Release
+```
+
+The regular contract and broker-backed integration tests remain part of the CI workflow.
+
 ## Testing
 
 The message posting flow is covered at three scopes. The unit test checks the handler's own logic and the event it publishes. The consumer contract test checks that the handler can process the minimum valid shared message and still publish its result. The integration test uses the real EasyNetQ client, the real background handler and a real RabbitMQ broker.
