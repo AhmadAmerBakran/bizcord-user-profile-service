@@ -2,6 +2,7 @@ using UserProfile.Api.Configuration;
 using UserProfile.Api.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
+await VaultConfiguration.LoadAsync(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
