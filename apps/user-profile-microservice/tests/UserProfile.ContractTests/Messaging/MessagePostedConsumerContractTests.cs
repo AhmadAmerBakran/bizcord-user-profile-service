@@ -44,7 +44,7 @@ public sealed class MessagePostedConsumerContractTests
     {
         private readonly Dictionary<Guid, UserMessageActivity> _activities = new();
 
-        public UserMessageActivity RecordMessage(Guid userId, DateTime postedAt)
+        public UserMessageActivity RecordMessage(Guid userId, Guid messageId, DateTime postedAt)
         {
             var activity = _activities.TryGetValue(userId, out var current)
                 ? current.RecordMessage(postedAt)

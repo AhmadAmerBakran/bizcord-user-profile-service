@@ -11,6 +11,7 @@ internal sealed class MessageHandlerBackgroundService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IReadOnlyCollection<MessageHandlerRegistration> _registrations;
     private readonly ILogger<MessageHandlerBackgroundService> _logger;
+    private readonly SubscriptionRetryPolicy _subscriptionRetry = new();
     private readonly List<IDisposable> _subscriptions = new();
 
     public MessageHandlerBackgroundService(
@@ -36,7 +37,15 @@ internal sealed class MessageHandlerBackgroundService : BackgroundService
 
             foreach (var registration in _registrations)
             {
-                var subscription = await SubscribeAsync(registration, stoppingToken);
+                var subscription = await _subscriptionRetry.ExecuteAsync(
+                    token => SubscribeAsync(registration, token),
+                    (exception, delay, attempt) => _logger.LogWarning(
+                        exception,
+                        "Subscription {SubscriptionId} failed on attempt {Attempt}. Retrying in {DelaySeconds} seconds.",
+                        registration.SubscriptionId,
+                        attempt,
+                        delay.TotalSeconds),
+                    stoppingToken);
                 _subscriptions.Add(subscription);
 
                 _logger.LogInformation(

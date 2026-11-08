@@ -37,7 +37,7 @@ public sealed class MessagePostedHandler : IMessageHandler<MessagePostedEvent>
             throw new ArgumentException("Posted time cannot be empty.", nameof(message));
         }
 
-        var activity = _activityRepository.RecordMessage(message.AuthorId, message.PostedAt);
+        var activity = _activityRepository.RecordMessage(message.AuthorId, message.MessageId, message.PostedAt);
 
         await _messageClient.PublishAsync(
             new UserProfileActivityUpdatedEvent

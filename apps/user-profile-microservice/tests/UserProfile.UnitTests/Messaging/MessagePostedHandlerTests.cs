@@ -3,6 +3,7 @@ using Shared.Contracts.Events;
 using UserProfile.Api.Messaging;
 using UserProfile.Application.Abstractions;
 using UserProfile.Domain.Entities;
+using UserProfile.Infrastructure.Repositories;
 using Xunit;
 
 namespace UserProfile.UnitTests.Messaging;
@@ -44,11 +45,62 @@ public sealed class MessagePostedHandlerTests
         published.LastMessageAt.Should().Be(postedAt);
     }
 
+    [Fact]
+    public async Task HandleAsync_Redelivery_DoesNotCountSameMessageTwice()
+    {
+        var repository = new InMemoryUserMessageActivityRepository();
+        var client = new FakeMessageClient();
+        var handler = new MessagePostedHandler(repository, client);
+        var message = new MessagePostedEvent
+        {
+            MessageId = Guid.NewGuid(),
+            ChannelId = Guid.NewGuid(),
+            AuthorId = Guid.NewGuid(),
+            Content = "Hi",
+            PostedAt = DateTime.UtcNow
+        };
+
+        await handler.HandleAsync(message, CancellationToken.None);
+        await handler.HandleAsync(message, CancellationToken.None);
+
+        repository.GetByUserId(message.AuthorId)!.MessageCount.Should().Be(1);
+        client.Published.Should().HaveCount(2);
+        client.Published.Cast<UserProfileActivityUpdatedEvent>()
+            .Should().OnlyContain(result => result.MessageId == message.MessageId && result.MessageCount == 1);
+    }
+
+    [Fact]
+    public async Task HandleAsync_PublishFailure_DoesNotDoubleCountOnReplay()
+    {
+        var repository = new InMemoryUserMessageActivityRepository();
+        var client = new FakeMessageClient { FailNextPublish = true };
+        var handler = new MessagePostedHandler(repository, client);
+        var message = new MessagePostedEvent
+        {
+            MessageId = Guid.NewGuid(),
+            ChannelId = Guid.NewGuid(),
+            AuthorId = Guid.NewGuid(),
+            Content = "Hi",
+            PostedAt = DateTime.UtcNow
+        };
+
+        Func<Task> firstDelivery = () => handler.HandleAsync(message, CancellationToken.None);
+        await firstDelivery.Should().ThrowAsync<IOException>();
+
+        await handler.HandleAsync(message, CancellationToken.None);
+
+        repository.GetByUserId(message.AuthorId)!.MessageCount.Should().Be(1);
+        var published = client.Published.Should().ContainSingle().Subject
+            .Should().BeOfType<UserProfileActivityUpdatedEvent>().Subject;
+        published.MessageId.Should().Be(message.MessageId);
+        published.MessageCount.Should().Be(1);
+    }
+
     private sealed class FakeActivityRepository : IUserMessageActivityRepository
     {
         private readonly Dictionary<Guid, UserMessageActivity> _activities = new();
 
-        public UserMessageActivity RecordMessage(Guid userId, DateTime postedAt)
+        public UserMessageActivity RecordMessage(Guid userId, Guid messageId, DateTime postedAt)
         {
             var activity = _activities.TryGetValue(userId, out var current)
                 ? current.RecordMessage(postedAt)
@@ -67,9 +119,16 @@ public sealed class MessagePostedHandlerTests
     private sealed class FakeMessageClient : IMessageClient
     {
         public List<object> Published { get; } = new();
+        public bool FailNextPublish { get; set; }
 
         public Task PublishAsync<T>(T message, CancellationToken cancellationToken = default)
         {
+            if (FailNextPublish)
+            {
+                FailNextPublish = false;
+                throw new IOException("Message broker unavailable.");
+            }
+
             Published.Add(message!);
             return Task.CompletedTask;
         }
