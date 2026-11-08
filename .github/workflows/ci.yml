@@ -37,6 +37,11 @@ jobs:
       - name: Integration tests
         run: dotnet test apps/user-profile-microservice/tests/UserProfile.IntegrationTests/UserProfile.IntegrationTests.csproj --configuration Release
 
+      - name: Security configuration checks
+        run: |
+          python week45/api-gateway/check_config.py
+          docker compose -f week45/vault/compose.yaml config --quiet
+
       - name: Docker build
         run: docker build -f apps/user-profile-microservice/Dockerfile -t bizcord-user-profile .
 
