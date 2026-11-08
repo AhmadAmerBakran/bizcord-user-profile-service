@@ -88,11 +88,17 @@ if [ "$api_status" != "401" ]; then
 fi
 
 "${compose[@]}" restart vault >/dev/null
-status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 5 http://127.0.0.1:8200/v1/sys/health || true)"
+status='000'
+for attempt in {1..30}; do
+    status="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 5 http://127.0.0.1:8200/v1/sys/health || true)"
+    if [ "$status" = "503" ]; then break; fi
+    sleep 1
+done
 if [ "$status" != "503" ]; then
     echo "Expected sealed Vault after restart (HTTP 503), got $status" >&2
     exit 1
 fi
+assert_status 503 GET http://127.0.0.1:8200/v1/secret/data/user-profile "$app_token"
 
 "${compose[@]}" exec -T vault vault operator unseal "$first_key" >/dev/null
 "${compose[@]}" exec -T vault vault operator unseal "$second_key" >/dev/null
