@@ -11,5 +11,6 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
             ?? "host=localhost;username=bizcord;password=bizcord";
 
         Environment.SetEnvironmentVariable("RabbitMq__ConnectionString", connectionString);
+        Environment.SetEnvironmentVariable("AuthenticationProviderKey", "test-only-jwt-signing-key-for-ci-2026-keep-out-of-production");
     }
 }

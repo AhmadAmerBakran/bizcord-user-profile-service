@@ -44,12 +44,13 @@ jobs:
         run: |
           docker run -d --name user-profile-smoke --network host \
             -e 'RabbitMq__ConnectionString=host=localhost;username=bizcord;password=bizcord' \
+            -e 'AuthenticationProviderKey=test-only-jwt-signing-key-for-ci-2026-keep-out-of-production' \
             bizcord-user-profile
           trap 'docker rm -f user-profile-smoke >/dev/null 2>&1 || true' EXIT
 
           for attempt in {1..30}; do
-            if curl --silent --fail http://localhost:8080/api/user-profiles > /dev/null; then
-              echo "User Profile API is responding."
+            if [ "$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:8080/api/user-profiles)" = "401" ]; then
+              echo "User Profile API rejects anonymous requests."
               exit 0
             fi
 
