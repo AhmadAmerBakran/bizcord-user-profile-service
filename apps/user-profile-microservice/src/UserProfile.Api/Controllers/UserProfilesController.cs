@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserProfile.Api.Models;
 using UserProfile.Application.Exceptions;
@@ -17,6 +18,7 @@ public sealed class UserProfilesController : ControllerBase
         _service = service;
     }
 
+    [Authorize(Policy = "ProfileAdminRead")]
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyCollection<UserProfileDto>), StatusCodes.Status200OK)]
     public ActionResult<IReadOnlyCollection<UserProfileDto>> GetAll()
@@ -24,6 +26,7 @@ public sealed class UserProfilesController : ControllerBase
         return Ok(_service.GetAll());
     }
 
+    [Authorize(Policy = "ProfileRead")]
     [HttpGet("{userId:guid}", Name = nameof(GetByUserId))]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -35,10 +38,16 @@ public sealed class UserProfilesController : ControllerBase
             return InvalidUserId();
         }
 
+        if (!User.IsInRole("admin") && User.FindFirst("sub")?.Value != userId.ToString())
+        {
+            return Forbid();
+        }
+
         var profile = _service.GetByUserId(userId);
         return profile is null ? ProfileNotFound(userId) : Ok(profile);
     }
 
+    [Authorize(Policy = "ProfileAdminWrite")]
     [HttpPost]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -79,6 +88,7 @@ public sealed class UserProfilesController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "ProfileAdminWrite")]
     [HttpPut("{userId:guid}")]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -102,6 +112,7 @@ public sealed class UserProfilesController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "ProfileAdminWrite")]
     [HttpDelete("{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAuthorization();
+builder.Services.AddProfileSecurity(builder.Configuration);
 builder.Services.AddMessageClient(builder.Configuration);
 builder.Services.AddMessageHandlers(typeof(MessageClientServiceCollectionExtensions).Assembly);
 builder.Services.AddUserProfiles();
@@ -20,6 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
