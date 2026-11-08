@@ -47,14 +47,17 @@ public sealed class SubscriptionRetryPolicyTests
         var attempts = 0;
         var policy = new SubscriptionRetryPolicy();
 
-        Func<Task> act = async () => await policy.ExecuteAsync(
-            _ =>
-            {
-                attempts++;
-                return Task.FromResult<IDisposable>(new TestSubscription());
-            },
-            (_, _, _) => { },
-            cancellation.Token);
+        Func<Task> act = async () =>
+        {
+            await policy.ExecuteAsync(
+                _ =>
+                {
+                    attempts++;
+                    return Task.FromResult<IDisposable>(new TestSubscription());
+                },
+                (_, _, _) => { },
+                cancellation.Token);
+        };
 
         await act.Should().ThrowAsync<OperationCanceledException>();
         attempts.Should().Be(0);
@@ -71,14 +74,17 @@ public sealed class SubscriptionRetryPolicyTests
             return Task.CompletedTask;
         });
 
-        Func<Task> act = async () => await policy.ExecuteAsync(
-            _ =>
-            {
-                attempts++;
-                return Task.FromException<IDisposable>(new IOException("Broker unavailable"));
-            },
-            (_, _, _) => { },
-            cancellation.Token);
+        Func<Task> act = async () =>
+        {
+            await policy.ExecuteAsync(
+                _ =>
+                {
+                    attempts++;
+                    return Task.FromException<IDisposable>(new IOException("Broker unavailable"));
+                },
+                (_, _, _) => { },
+                cancellation.Token);
+        };
 
         await act.Should().ThrowAsync<OperationCanceledException>();
         attempts.Should().Be(1);
