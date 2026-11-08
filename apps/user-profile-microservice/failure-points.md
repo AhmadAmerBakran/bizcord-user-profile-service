@@ -1,0 +1,33 @@
+# Week 44: failure review
+
+Reviewed against the User Profile service on `master` before making the week 44 changes. This is the implementation in this repository, not the whole Bizcord architecture.
+
+## RabbitMQ subscriptions
+
+`MessageHandlerBackgroundService` subscribes to `MessagePostedEvent` when the API starts. A failed subscription currently throws out of the background service. There is no application-level retry, so a temporary broker outage can leave the consumer unavailable. The Compose health check helps with initial startup but cannot prevent later broker outages.
+
+Priority: high. Retry subscription setup with backoff and cancellation support. Log unsuccessful attempts rather than silently dropping the consumer.
+
+## Event processing and publishing
+
+`MessagePostedHandler` records the author's message activity before publishing `UserProfileActivityUpdatedEvent`. If publishing fails, the local count has already changed. A replay of the same `MessagePostedEvent` will increase the count again because the repository does not track processed message IDs.
+
+Priority: high. Make activity updates idempotent by `MessageId`. A repeated delivery should leave the count unchanged and may republish the result. Downstream consumers must also handle repeated result events.
+
+Publishing itself can still fail. There is no durable outbox to guarantee delivery after a process crash.
+
+## In-memory storage
+
+`InMemoryUserProfileRepository` and `InMemoryUserMessageActivityRepository` store state inside the API process. Restarting the container loses profiles, activity counts and any record of processed messages. Running multiple API replicas would also create separate, inconsistent copies of this state.
+
+Priority: high for a deployed system. The proper fix is persistent storage with a durable processed-message record. Retry and fallback policies cannot make in-memory data durable.
+
+## Timeouts and other dependencies
+
+The RabbitMQ adapter forwards cancellation tokens, but the service does not configure an explicit per-operation timeout for publishing or subscribing. A slow operation could remain pending longer than callers expect. A bounded operation budget should be considered alongside the broker client's own timeout and recovery settings.
+
+The current User Profile service makes no outbound HTTP requests to the other Bizcord services. Its REST endpoints use local repositories, not a remote database or payment provider. Introducing HTTP retry or a database fallback here would not address a failure point in the current code.
+
+## This week's implementation
+
+Start with subscription retry and idempotent message activity updates. Cover temporary subscription failures, cancellation, duplicate events and recovery after a failed publication in tests. Durable storage, an outbox, a publish timeout and deployment-level health checks remain follow-up work.
