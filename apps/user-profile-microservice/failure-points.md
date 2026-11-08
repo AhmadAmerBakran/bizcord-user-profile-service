@@ -30,4 +30,18 @@ The current User Profile service makes no outbound HTTP requests to the other Bi
 
 ## This week's implementation
 
-Start with subscription retry and idempotent message activity updates. Cover temporary subscription failures, cancellation, duplicate events and recovery after a failed publication in tests. Durable storage, an outbox, a publish timeout and deployment-level health checks remain follow-up work.
+Subscription retry is implemented in the API messaging layer, alongside the background consumer. Broker connection management does not belong in the domain model. Message deduplication is implemented in the activity repository, where the processed ID and message count can be updated under the same lock.
+
+The subscription retry uses exponential backoff capped at 30 seconds and stops on host shutdown. It is intended for subscription setup failures; it does not replace the broker library's connection recovery or add an operation timeout. The retry currently logs and repeats all subscription exceptions, so persistent configuration errors also require attention in the logs.
+
+The processed-message record prevents duplicate count updates within one running process. A repeated input can still lead to a repeated output event. We have not added a fallback that invents profile data or silently discards events.
+
+## Verification
+
+The new unit tests simulate failed subscription attempts, cancellation before and during retry, a publish failure followed by replay, duplicate message IDs and concurrent repeated deliveries. They run without RabbitMQ:
+
+```bash
+dotnet test tests/UserProfile.UnitTests/UserProfile.UnitTests.csproj --configuration Release
+```
+
+The existing contract and broker-backed integration tests run in CI along with the Docker build and startup check. A durable outbox, persistent data, explicit publish timeouts and broker failure recovery after a full process crash remain follow-up work.
