@@ -69,3 +69,6 @@ jobs:
 
           docker logs user-profile-smoke
           exit 1
+
+      - name: Vault end-to-end smoke test
+        run: bash week45/vault/test-smoke.sh
