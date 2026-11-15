@@ -102,7 +102,9 @@ public sealed class UserProfileService : IUserProfileService
         return new UserProfileDto(
             profile.UserId,
             profile.DisplayName.Value,
-            profile.Bio.Value,
-            profile.IsPremium);
+            profile.Bio.Value)
+        {
+            IsPremium = profile.IsPremium
+        };
     }
 }
