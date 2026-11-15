@@ -8,6 +8,7 @@ public sealed class UserProfile
     public Guid UserId { get; }
     public DisplayName DisplayName { get; private set; }
     public Bio Bio { get; private set; }
+    public bool IsPremium { get; private set; }
 
     public UserProfile(Guid id, Guid userId, DisplayName displayName, Bio? bio = null)
     {
@@ -35,5 +36,10 @@ public sealed class UserProfile
     public void ChangeBio(Bio bio)
     {
         Bio = bio ?? throw new ArgumentNullException(nameof(bio));
+    }
+
+    public void ChangePremiumStatus(bool isPremium)
+    {
+        IsPremium = isPremium;
     }
 }
