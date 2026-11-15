@@ -74,6 +74,24 @@ public sealed class UserProfileService : IUserProfileService
         return ToDto(profile);
     }
 
+    public bool SetPremiumStatus(Guid userId, bool isPremium)
+    {
+        if (userId == Guid.Empty)
+        {
+            return false;
+        }
+
+        var profile = _repository.GetByUserId(userId);
+        if (profile is null)
+        {
+            return false;
+        }
+
+        profile.ChangePremiumStatus(isPremium);
+        _repository.Update(profile);
+        return true;
+    }
+
     public bool Delete(Guid userId)
     {
         return userId != Guid.Empty && _repository.Delete(userId);
@@ -84,6 +102,9 @@ public sealed class UserProfileService : IUserProfileService
         return new UserProfileDto(
             profile.UserId,
             profile.DisplayName.Value,
-            profile.Bio.Value);
+            profile.Bio.Value)
+        {
+            IsPremium = profile.IsPremium
+        };
     }
 }

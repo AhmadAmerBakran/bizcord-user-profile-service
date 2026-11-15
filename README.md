@@ -24,6 +24,8 @@ Development details for the microservice are kept in `apps/user-profile-microser
 
 The [architecture notes](docs/architecture.md) describe our service boundaries, data ownership and interactions.
 
+The [Week 46 premium purchase saga](week46/README.md) shows a multistep operation with compensation. It runs a coordinator and three simulated services alongside the existing profile API, using the message client already in this repository.
+
 ## Development workflow
 
 Work for each course week is kept on its own branch and merged when the week's tasks are complete.

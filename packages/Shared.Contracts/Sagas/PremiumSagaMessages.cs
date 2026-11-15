@@ -1,0 +1,30 @@
+namespace Shared.Contracts.Sagas;
+
+// Every command and outcome carries the same SagaId throughout the purchase.
+public sealed record StartPremiumPurchase(Guid SagaId, Guid UserId, decimal Amount);
+public sealed record ChargePremium(Guid SagaId, Guid UserId, decimal Amount);
+public sealed record PremiumCharged(Guid SagaId, Guid UserId);
+public sealed record PremiumChargeFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record ActivatePremium(Guid SagaId, Guid UserId);
+public sealed record PremiumActivated(Guid SagaId, Guid UserId);
+public sealed record PremiumActivationFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record ApplyPremiumBadge(Guid SagaId, Guid UserId);
+public sealed record PremiumBadgeApplied(Guid SagaId, Guid UserId);
+public sealed record PremiumBadgeFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record SendPremiumWelcome(Guid SagaId, Guid UserId);
+public sealed record PremiumWelcomeSent(Guid SagaId, Guid UserId);
+public sealed record PremiumWelcomeFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record RemovePremiumBadge(Guid SagaId, Guid UserId);
+public sealed record PremiumBadgeRemoved(Guid SagaId, Guid UserId);
+public sealed record PremiumBadgeRemovalFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record DeactivatePremium(Guid SagaId, Guid UserId);
+public sealed record PremiumDeactivated(Guid SagaId, Guid UserId);
+public sealed record PremiumDeactivationFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record RefundPremium(Guid SagaId, Guid UserId, decimal Amount);
+public sealed record PremiumRefunded(Guid SagaId, Guid UserId);
+public sealed record PremiumRefundFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record SendPremiumCorrection(Guid SagaId, Guid UserId);
+public sealed record PremiumCorrectionSent(Guid SagaId, Guid UserId);
+public sealed record PremiumCorrectionFailed(Guid SagaId, Guid UserId, string Reason);
+public sealed record ReportPremiumChargeReversal(Guid SagaId, Guid UserId, string Reason);
+public sealed record PremiumChargeReversed(Guid SagaId, Guid UserId, string Reason);

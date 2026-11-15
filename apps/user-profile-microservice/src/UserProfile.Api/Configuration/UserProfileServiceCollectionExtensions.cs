@@ -1,3 +1,4 @@
+using UserProfile.Api.Messaging;
 using UserProfile.Application.Abstractions;
 using UserProfile.Application.Services;
 using UserProfile.Infrastructure.Repositories;
@@ -10,6 +11,7 @@ public static class UserProfileServiceCollectionExtensions
     {
         services.AddSingleton<IUserProfileRepository, InMemoryUserProfileRepository>();
         services.AddSingleton<IUserMessageActivityRepository, InMemoryUserMessageActivityRepository>();
+        services.AddSingleton<PremiumBadgeRegistry>();
         services.AddScoped<IUserProfileService, UserProfileService>();
 
         return services;
