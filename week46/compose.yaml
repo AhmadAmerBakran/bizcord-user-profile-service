@@ -1,0 +1,92 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: bizcord
+      RABBITMQ_DEFAULT_PASS: bizcord
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  profile:
+    build:
+      context: ..
+      dockerfile: apps/user-profile-microservice/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      RabbitMq__ConnectionString: host=rabbitmq;username=bizcord;password=bizcord
+      AuthenticationProviderKey: local-demo-signing-key-for-saga-workshop-2026
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  coordinator:
+    build:
+      context: ..
+      dockerfile: week46/PremiumSagaDemo/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Saga__Role: coordinator
+      Saga__StateFile: /data/coordinator.json
+      RabbitMq__ConnectionString: host=rabbitmq;username=bizcord;password=bizcord
+    volumes:
+      - coordinator-state:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  payment:
+    build:
+      context: ..
+      dockerfile: week46/PremiumSagaDemo/Dockerfile
+    environment:
+      Saga__Role: payment
+      Saga__StateFile: /data/payment.json
+      RabbitMq__ConnectionString: host=rabbitmq;username=bizcord;password=bizcord
+    volumes:
+      - payment-state:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  subscription:
+    build:
+      context: ..
+      dockerfile: week46/PremiumSagaDemo/Dockerfile
+    environment:
+      Saga__Role: subscription
+      Saga__StateFile: /data/subscription.json
+      RabbitMq__ConnectionString: host=rabbitmq;username=bizcord;password=bizcord
+    volumes:
+      - subscription-state:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  notification:
+    build:
+      context: ..
+      dockerfile: week46/PremiumSagaDemo/Dockerfile
+    environment:
+      Saga__Role: notification
+      Saga__StateFile: /data/notification.json
+      RabbitMq__ConnectionString: host=rabbitmq;username=bizcord;password=bizcord
+    volumes:
+      - notification-state:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  coordinator-state:
+  payment-state:
+  subscription-state:
+  notification-state:
