@@ -45,6 +45,7 @@ jobs:
           python week45/api-gateway/check_config.py
           docker compose -f week45/vault/compose.yaml config --quiet
           docker compose -f week46/compose.yaml config --quiet
+          docker compose -f apps/user-profile-microservice/docker-compose.yml config --quiet
 
       - name: Docker build
         run: docker build -f apps/user-profile-microservice/Dockerfile -t bizcord-user-profile .
@@ -79,3 +80,32 @@ jobs:
 
       - name: Vault end-to-end smoke test
         run: bash week45/vault/test-smoke.sh
+
+  sidecar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fluentd sidecar smoke test
+        env:
+          AUTHENTICATION_PROVIDER_KEY: test-only-jwt-signing-key-for-ci-2026-keep-out-of-production
+        run: |
+          set -euo pipefail
+          compose="apps/user-profile-microservice/docker-compose.yml"
+          trap 'docker compose -f "$compose" logs --no-color fluentd || true; docker compose -f "$compose" down -v --remove-orphans || true' EXIT
+
+          docker compose -f "$compose" config --quiet
+          docker compose -f "$compose" up --build -d
+
+          for attempt in {1..45}; do
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:8080/api/user-profiles || true)"
+            if [ "$status" = "401" ] && docker compose -f "$compose" logs --no-color fluentd | grep -Fq "User Profile API logging is handled by stdout."; then
+              echo "Fluentd received the API's console output, and anonymous access is blocked."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f "$compose" ps
+          exit 1
