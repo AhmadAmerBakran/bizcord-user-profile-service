@@ -2,6 +2,10 @@ using UserProfile.Api.Configuration;
 using UserProfile.Api.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Application logs stay on stdout. Fluentd handles their delivery outside this process.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 await VaultConfiguration.LoadAsync(builder.Configuration);
 
 builder.Services.AddControllers();
@@ -25,6 +29,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+app.Logger.LogInformation("User Profile API logging is handled by stdout.");
 app.Run();
 
 public partial class Program;
