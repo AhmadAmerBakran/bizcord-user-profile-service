@@ -14,6 +14,21 @@ services:
       retries: 10
       start_period: 10s
 
+  fluentd:
+    image: fluent/fluentd:v1.20-debian-1
+    ports:
+      - "127.0.0.1:24224:24224"
+    volumes:
+      - ./fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+    environment:
+      FLUENTD_CONF: fluent.conf
+    healthcheck:
+      test: ["CMD", "ruby", "-rsocket", "-e", "TCPSocket.new('127.0.0.1', 24224).close"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
   user-profile:
     build:
       context: ../..
@@ -21,7 +36,16 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      fluentd:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
       RabbitMq__ConnectionString: "host=rabbitmq;username=bizcord;password=bizcord"
+      AuthenticationProviderKey: "${AUTHENTICATION_PROVIDER_KEY:-}"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: "127.0.0.1:24224"
+        fluentd-async: "true"
+        tag: "bizcord.user-profile"

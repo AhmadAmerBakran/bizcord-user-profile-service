@@ -36,3 +36,5 @@ Other changes can still use short-lived branches when needed, for example:
 fix/profile-validation
 chore/update-project-setup
 ```
+
+The [Week 47 Fluentd and GraphQL work](week47/README.md) adds a logging sidecar and a secured GraphQL presentation layer without changing the profile domain.
